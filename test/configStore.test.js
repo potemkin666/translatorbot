@@ -64,7 +64,7 @@ test('saveSetupConfiguration accepts LM Studio when no API key is provided', () 
     assert.equal(result.llmStudioDetected, true)
     assert.match(nextContent, new RegExp(`OPENAI_BASE_URL=${DEFAULT_LM_STUDIO_BASE_URL.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`))
     assert.match(nextContent, /TRANSLATION_PROVIDER=openai/)
-    assert.match(nextContent, /TRANSCRIPTION_PROVIDER=$/)
+    assert.match(nextContent, /TRANSCRIPTION_PROVIDER=\n/)
   } finally {
     process.env.OPENAI_API_KEY = originalApiKey
     process.env.OPENAI_BASE_URL = originalBaseUrl
