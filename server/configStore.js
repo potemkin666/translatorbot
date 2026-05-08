@@ -8,7 +8,7 @@ const DEFAULT_ENV_PATH = path.resolve(__dirname, '../.env')
 const ENV_KEY_PATTERN = /^([A-Z0-9_]+)=.*$/
 
 function normalizeEnvValue(value = '') {
-  return String(value ?? '').trim().replace(/\r?\n/g, '')
+  return String(value).trim().replace(/\r?\n/g, '')
 }
 
 function formatEnvValue(value = '') {
@@ -17,7 +17,7 @@ function formatEnvValue(value = '') {
     return ''
   }
 
-  return /[\s#"'`]/.test(normalized) ? JSON.stringify(normalized) : normalized
+  return /[\s#"'`\\]/.test(normalized) ? JSON.stringify(normalized) : normalized
 }
 
 function getStoredApiKey() {
@@ -73,7 +73,14 @@ export function saveSetupConfiguration({
     throw error
   }
 
-  const existingContent = fs.existsSync(envPath) ? fs.readFileSync(envPath, 'utf8') : ''
+  let existingContent = ''
+  try {
+    existingContent = fs.readFileSync(envPath, 'utf8')
+  } catch (error) {
+    if (error?.code !== 'ENOENT') {
+      throw error
+    }
+  }
   const nextContent = updateEnvFileContent(existingContent, {
     OPENAI_API_KEY: nextKey,
     TRANSLATION_PROVIDER: enableTranslation ? 'openai' : '',

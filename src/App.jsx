@@ -522,7 +522,7 @@ function App() {
               <button type="button" className="ghost-button" onClick={() => setSetupModalOpen(false)}>Maybe later</button>
             </div>
             <p className="setup-copy">
-              Paste one OpenAI API key and choose which features should be ready for your colleague. TranslatorBot saves the settings for you automatically.
+              Paste one OpenAI API key and choose which features should be enabled. TranslatorBot saves the settings for you automatically.
             </p>
             <form className="setup-form" onSubmit={handleSetupSubmit}>
               <label className="field-label">
