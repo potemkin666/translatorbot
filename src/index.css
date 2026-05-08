@@ -42,6 +42,42 @@ button {
   overflow: hidden;
 }
 
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 4;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  background: rgba(2, 8, 23, 0.72);
+  backdrop-filter: blur(10px);
+}
+
+.setup-modal {
+  width: min(100%, 34rem);
+  border-radius: 1.5rem;
+  padding: 1.35rem;
+}
+
+.setup-copy {
+  color: #bfecfb;
+  margin-bottom: 1rem;
+}
+
+.setup-form {
+  display: grid;
+  gap: 1rem;
+}
+
+.setup-toggle {
+  margin-bottom: 0;
+}
+
+.field-hint {
+  color: #9fd8e8;
+  font-size: 0.88rem;
+}
+
 .bg-orb {
   position: fixed;
   width: 28rem;
