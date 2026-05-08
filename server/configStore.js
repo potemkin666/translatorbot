@@ -17,7 +17,7 @@ function formatEnvValue(value = '') {
     return ''
   }
 
-  return /[\s#"'`\\]/.test(normalized) ? JSON.stringify(normalized) : normalized
+  return /[\s#$"'`\\]/.test(normalized) ? JSON.stringify(normalized) : normalized
 }
 
 function getStoredApiKey() {
