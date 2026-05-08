@@ -506,6 +506,8 @@ function App() {
 
   return (
     <div className="app-shell">
+      <div className="bg-portrait"></div>
+      <div className="bg-vignette"></div>
       <div className="bg-orb orb-a"></div>
       <div className="bg-orb orb-b"></div>
       <div className="bg-grid"></div>
