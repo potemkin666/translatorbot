@@ -76,6 +76,7 @@ Notes:
 - `TRANSLATION_PROVIDER` currently supports `openai`.
 - `TRANSCRIPTION_PROVIDER` currently supports `openai`.
 - `TRANSLATION_API_KEY` is optional when `OPENAI_API_KEY` is already set.
+- The setup popup keeps working if an older `.env` already has `TRANSLATION_API_KEY`; it will reuse that saved key unless you paste a new shared `OPENAI_API_KEY`.
 
 ## How it works
 

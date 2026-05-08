@@ -556,7 +556,16 @@ function App() {
                 <button type="submit" className="primary-button" disabled={setupBusy}>
                   {setupBusy ? 'Saving setup...' : 'Save setup'}
                 </button>
-              <button type="button" className="secondary-button" disabled={setupBusy} onClick={() => loadHealthConfig().catch(() => undefined)}>
+              <button
+                type="button"
+                className="secondary-button"
+                disabled={setupBusy}
+                onClick={() => {
+                  loadHealthConfig().catch(() => {
+                    setSetupErrorMessage('Could not refresh configuration status.')
+                  })
+                }}
+              >
                 Refresh status
               </button>
               </div>
