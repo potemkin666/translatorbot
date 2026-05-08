@@ -56,7 +56,7 @@ test('saveSetupConfiguration accepts LM Studio when no API key is provided', () 
       enableTranslation: true,
       enableTranscription: false,
       envPath,
-      lmStudioDetected: true,
+      llmStudioDetected: true,
     })
 
     const nextContent = fs.readFileSync(envPath, 'utf8')

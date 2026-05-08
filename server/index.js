@@ -73,7 +73,7 @@ app.post('/api/setup', async (req, res, next) => {
       openAIApiKey,
       enableTranslation: Boolean(enableTranslation),
       enableTranscription: Boolean(enableTranscription),
-      lmStudioDetected: llmStudioDetected,
+      llmStudioDetected,
     })
 
     res.json({

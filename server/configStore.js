@@ -59,7 +59,7 @@ export function saveSetupConfiguration({
   enableTranslation = true,
   enableTranscription = true,
   envPath = DEFAULT_ENV_PATH,
-  lmStudioDetected = false,
+  llmStudioDetected = false,
 }) {
   if (!enableTranslation && !enableTranscription) {
     const error = new Error('Choose at least one feature to configure.')
@@ -70,7 +70,7 @@ export function saveSetupConfiguration({
   const existingKey = getStoredApiKey()
   const nextKey = normalizeEnvValue(openAIApiKey) || existingKey
   const existingBaseUrl = normalizeEnvValue(process.env.OPENAI_BASE_URL || process.env.LM_STUDIO_BASE_URL || '')
-  const nextBaseUrl = existingBaseUrl || (lmStudioDetected ? DEFAULT_LM_STUDIO_BASE_URL : '')
+  const nextBaseUrl = existingBaseUrl || (llmStudioDetected ? DEFAULT_LM_STUDIO_BASE_URL : '')
   if (!nextKey && !nextBaseUrl) {
     const error = new Error('Enter your OpenAI API key or start LM Studio to finish setup.')
     error.statusCode = 400
