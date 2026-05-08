@@ -97,7 +97,7 @@ button {
 .particle {
   position: absolute;
   border-radius: 999px;
-  background: radial-gradient(circle, rgba(255, 255, 255, 0.95) 0%, rgba(125, 246, 255, 0.68) 45%, rgba(125, 246, 255, 0) 100%);
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.95) 0%, rgba(125, 246, 255, 0.68) 48%, rgba(125, 246, 255, 0) 72%);
   box-shadow: 0 0 18px rgba(122, 244, 255, 0.3);
   animation: particleRise 18s linear infinite;
   opacity: 0.55;

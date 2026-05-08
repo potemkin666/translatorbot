@@ -55,7 +55,7 @@ const DEFAULT_CONFIG = {
   transcriptionConfigured: false,
 }
 
-const FLOATING_PARTICLES = Array.from({ length: 12 }, (_, index) => index)
+const FLOATING_PARTICLE_COUNT = 12
 
 function buildDefaultSetupFormState(nextConfig = DEFAULT_CONFIG) {
   return {
@@ -116,6 +116,18 @@ function App() {
 
     return currentResult.detectedLanguage || 'Auto-detecting...'
   }, [currentResult.detectedLanguage, currentResult.mode])
+
+  const buildTranslationStatusMessage = useCallback((payload) => {
+    if (payload.switchedTargetLanguage) {
+      return `Detected ${payload.detectedLanguage}. Target automatically switched to ${payload.switchedTargetLanguage}.`
+    }
+
+    if (payload.detectedLanguage) {
+      return `Detected ${payload.detectedLanguage}. Translation ready.`
+    }
+
+    return 'Translation ready.'
+  }, [])
 
   const paragraphPairs = useMemo(() => {
     const sourceParagraphs = splitIntoParagraphs(currentResult.sourceText)
@@ -249,13 +261,7 @@ function App() {
         }))
       }
 
-      setStatusMessage(
-        payload.switchedTargetLanguage
-          ? `Detected ${payload.detectedLanguage}. Target automatically switched to ${payload.switchedTargetLanguage}.`
-          : payload.detectedLanguage
-            ? `Detected ${payload.detectedLanguage}. Translation ready.`
-            : 'Translation ready.',
-      )
+      setStatusMessage(buildTranslationStatusMessage(payload))
 
       return payload
     } catch (error) {
@@ -264,7 +270,7 @@ function App() {
     } finally {
       setBusyLabel('')
     }
-  }, [config.translationConfigured, lastDetectedLanguage, targetLanguage])
+  }, [buildTranslationStatusMessage, config.translationConfigured, lastDetectedLanguage, targetLanguage])
 
   const handleClipboardCapture = useCallback(async (clipboardText) => {
     const combined = incrementalCopy && copySource
@@ -522,7 +528,7 @@ function App() {
     <div className="app-shell">
       <div className="caustic-overlay"></div>
       <div className="particle-field" aria-hidden="true">
-        {FLOATING_PARTICLES.map((particle) => (
+        {Array.from({ length: FLOATING_PARTICLE_COUNT }, (_, particle) => (
           <span key={particle} className={`particle particle-${particle + 1}`}></span>
         ))}
       </div>
