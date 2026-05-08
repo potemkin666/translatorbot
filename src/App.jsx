@@ -55,6 +55,8 @@ const DEFAULT_CONFIG = {
   transcriptionConfigured: false,
 }
 
+const FLOATING_PARTICLES = Array.from({ length: 12 }, (_, index) => index)
+
 function buildDefaultSetupFormState(nextConfig = DEFAULT_CONFIG) {
   return {
     openAIApiKey: '',
@@ -105,6 +107,15 @@ function App() {
   const [setupErrorMessage, setSetupErrorMessage] = useState('')
   const [setupForm, setSetupForm] = useState(() => buildDefaultSetupFormState(DEFAULT_CONFIG))
   const [lastDetectedLanguage, setLastDetectedLanguage] = useState('English')
+  const autoConnectedToLmStudio = config.llmStudioDetected && !config.sharedApiKeyConfigured
+
+  const getDetectedLanguageLabel = useCallback((mode) => {
+    if (currentResult.mode !== mode) {
+      return 'Auto-detecting'
+    }
+
+    return currentResult.detectedLanguage || 'Detecting automatically'
+  }, [currentResult.detectedLanguage, currentResult.mode])
 
   const paragraphPairs = useMemo(() => {
     const sourceParagraphs = splitIntoParagraphs(currentResult.sourceText)
@@ -241,7 +252,9 @@ function App() {
       setStatusMessage(
         payload.switchedTargetLanguage
           ? `Detected ${payload.detectedLanguage}. Target automatically switched to ${payload.switchedTargetLanguage}.`
-          : 'Translation ready.',
+          : payload.detectedLanguage
+            ? `Detected ${payload.detectedLanguage}. Translation ready.`
+            : 'Translation ready.',
       )
 
       return payload
@@ -507,6 +520,12 @@ function App() {
 
   return (
     <div className="app-shell">
+      <div className="caustic-overlay"></div>
+      <div className="particle-field" aria-hidden="true">
+        {FLOATING_PARTICLES.map((particle) => (
+          <span key={particle} className={`particle particle-${particle + 1}`}></span>
+        ))}
+      </div>
       <div className="bg-portrait"></div>
       <div className="bg-vignette"></div>
       <div className="bg-orb orb-a"></div>
@@ -565,18 +584,18 @@ function App() {
                 <button type="submit" className="primary-button" disabled={setupBusy}>
                   {setupBusy ? 'Saving setup...' : 'Save setup'}
                 </button>
-              <button
-                type="button"
-                className="secondary-button"
-                disabled={setupBusy}
-                onClick={() => {
-                  loadHealthConfig().catch(() => {
-                    setSetupErrorMessage('Could not refresh configuration status.')
-                  })
-                }}
-              >
-                Refresh status
-              </button>
+                <button
+                  type="button"
+                  className="secondary-button"
+                  disabled={setupBusy}
+                  onClick={() => {
+                    loadHealthConfig().catch(() => {
+                      setSetupErrorMessage('Could not refresh configuration status.')
+                    })
+                  }}
+                >
+                  Refresh status
+                </button>
               </div>
             </form>
           </section>
@@ -584,11 +603,10 @@ function App() {
       ) : null}
       <header className="hero-card glass-panel">
         <div>
-          <p className="eyebrow">Ocean intelligence console</p>
+          <p className="eyebrow">Deep sea cyber shrine</p>
           <h1>TranslatorBot</h1>
           <p className="hero-copy">
-            Instant clipboard translation, typed drafts, audio transcripts, and document extraction in one polished,
-            ocean-themed workspace.
+            Pearl-lit translation rituals for clipboard captures, typed drafts, voice transcripts, and document decoding.
           </p>
         </div>
         <div className="hero-actions">
@@ -600,6 +618,12 @@ function App() {
             <span className={config.transcriptionConfigured ? 'status-dot good' : 'status-dot warn'}></span>
             Transcription {config.transcriptionConfigured ? 'ready' : 'not configured'}
           </div>
+          {config.llmStudioDetected ? (
+            <div className={`status-pill ${autoConnectedToLmStudio ? 'live' : ''}`}>
+              <span className={autoConnectedToLmStudio ? 'status-dot live' : 'status-dot good'}></span>
+              {autoConnectedToLmStudio ? 'LM Studio auto-connected' : 'LM Studio detected locally'}
+            </div>
+          ) : null}
           {!config.translationConfigured || !config.transcriptionConfigured ? (
             <button type="button" className="primary-button" onClick={() => {
               setSetupErrorMessage('')
@@ -670,6 +694,10 @@ function App() {
                 <div className="panel-card">
                   <div className="translation-header">
                     <div>
+                      <p className="mini-label">Detected source</p>
+                      <strong>{getDetectedLanguageLabel('copy')}</strong>
+                    </div>
+                    <div>
                       <p className="mini-label">Translation</p>
                       <strong>{currentResult.mode === 'copy' ? currentResult.targetLanguage : targetLanguage}</strong>
                     </div>
@@ -693,7 +721,7 @@ function App() {
                   <div className="dual-fields">
                     <label className="field-label compact">
                       Source language
-                      <input type="text" value="Auto-detect" disabled />
+                      <input type="text" value={getDetectedLanguageLabel('text')} disabled />
                     </label>
                     <label className="field-label compact">
                       Target language
@@ -726,7 +754,7 @@ function App() {
                   <div className="translation-header">
                     <div>
                       <p className="mini-label">Detected source</p>
-                      <strong>{currentResult.mode === 'text' ? currentResult.detectedLanguage || 'Pending' : 'Pending'}</strong>
+                      <strong>{getDetectedLanguageLabel('text')}</strong>
                     </div>
                   </div>
                   <div className="result-card ocean-scroll">{textTranslation || 'Manual translations appear here.'}</div>
@@ -752,6 +780,16 @@ function App() {
                   </div>
                 </div>
                 <div className="panel-card">
+                  <div className="translation-header">
+                    <div>
+                      <p className="mini-label">Detected source</p>
+                      <strong>{getDetectedLanguageLabel('audio')}</strong>
+                    </div>
+                    <div>
+                      <p className="mini-label">Translation</p>
+                      <strong>{currentResult.mode === 'audio' ? currentResult.targetLanguage : targetLanguage}</strong>
+                    </div>
+                  </div>
                   <label className="field-label">
                     Translation
                     <textarea value={audioState.translation} readOnly rows={10} />
@@ -782,6 +820,16 @@ function App() {
                   </div>
                 </div>
                 <div className="panel-card">
+                  <div className="translation-header">
+                    <div>
+                      <p className="mini-label">Detected source</p>
+                      <strong>{getDetectedLanguageLabel('document')}</strong>
+                    </div>
+                    <div>
+                      <p className="mini-label">Translation</p>
+                      <strong>{currentResult.mode === 'document' ? currentResult.targetLanguage : targetLanguage}</strong>
+                    </div>
+                  </div>
                   <label className="field-label">
                     Translation
                     <textarea value={documentState.translation} readOnly rows={12} />
