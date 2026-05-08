@@ -3,6 +3,7 @@ import express from 'express'
 import mammoth from 'mammoth'
 import multer from 'multer'
 import { PDFParse } from 'pdf-parse'
+import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { cleanExtractedText } from '../shared/textTools.js'
@@ -143,17 +144,19 @@ app.post('/api/document', upload.single('file'), async (req, res, next) => {
 })
 
 const distPath = path.resolve(__dirname, '../dist')
+const indexPath = path.join(distPath, 'index.html')
+const indexHtml = fs.existsSync(indexPath) ? fs.readFileSync(indexPath, 'utf8') : ''
 app.use(express.static(distPath))
 app.use((req, res, next) => {
   if (req.path.startsWith('/api/')) {
     return next()
   }
 
-  return res.sendFile(path.join(distPath, 'index.html'), (error) => {
-    if (error) {
-      next(error)
-    }
-  })
+  if (!indexHtml) {
+    return res.status(503).send('Frontend build not found. Run npm run build first.')
+  }
+
+  return res.type('html').send(indexHtml)
 })
 
 app.use((error, _req, res) => {
