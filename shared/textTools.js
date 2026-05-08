@@ -1,6 +1,7 @@
 export const HISTORY_LIMIT = 20
 
 export const LANGUAGE_OPTIONS = [
+  'Albanian',
   'English',
   'Spanish',
   'French',
@@ -15,6 +16,7 @@ export const LANGUAGE_OPTIONS = [
   'Chinese (Traditional)',
   'Arabic',
   'Hindi',
+  'Russian',
   'Turkish',
   'Ukrainian',
 ]

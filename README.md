@@ -8,6 +8,7 @@ TranslatorBot is an ocean-themed translation workspace inspired by CopyTranslato
 - **Text Mode** with auto-detect source language, translate/copy/export actions, and markdown downloads
 - **Audio Mode** for mp3, wav, m4a, and webm uploads with transcript + translation output
 - **Document Mode** for PDF, TXT, and DOCX extraction with scanned PDF detection
+- **Guided setup popup** that helps non-technical users save the OpenAI key and enable translation/transcription from the UI
 - **Reading Mode** for large, focused translation-only viewing
 - **Contrast Mode** for side-by-side paragraph alignment
 - **Dictionary Mode** for single-word and short-phrase definitions, examples, and alternatives
@@ -29,7 +30,7 @@ npm install
 cp .env.example .env
 ```
 
-Set the required environment variables in `.env` before translating or transcribing.
+You can either set the required environment variables in `.env` manually or use the in-app setup popup to save them from the UI.
 
 ## Run
 
@@ -75,6 +76,7 @@ Notes:
 - `TRANSLATION_PROVIDER` currently supports `openai`.
 - `TRANSCRIPTION_PROVIDER` currently supports `openai`.
 - `TRANSLATION_API_KEY` is optional when `OPENAI_API_KEY` is already set.
+- The setup popup keeps working if an older `.env` already has `TRANSLATION_API_KEY`; it will reuse that saved key unless you paste a new shared `OPENAI_API_KEY`.
 
 ## How it works
 
@@ -83,15 +85,16 @@ Notes:
 3. **Audio Mode** uploads supported audio files, requests a transcript, then translates that transcript.
 4. **Document Mode** extracts clean text from PDF/TXT/DOCX, rejects image-only PDFs, and translates the cleaned content.
 5. **Reading / Contrast / Dictionary** tabs reuse the latest successful translation in specialized views.
+6. **Guided setup popup** opens automatically whenever translation or transcription is missing and writes the chosen settings into `.env`.
 
 ## Troubleshooting
 
 - **“Clipboard listening must be enabled first.”**
   - Browser clipboard access must be triggered by the Start listening button.
 - **“Translation provider is not configured.”**
-  - Set `OPENAI_API_KEY` and `TRANSLATION_PROVIDER=openai` in `.env`.
+  - Use the setup popup or set `OPENAI_API_KEY` and `TRANSLATION_PROVIDER=openai` in `.env`.
 - **“Audio transcription failed.”**
-  - Confirm `TRANSCRIPTION_PROVIDER=openai`, the API key, and a supported audio file type.
+  - Use the setup popup or confirm `TRANSCRIPTION_PROVIDER=openai`, the API key, and a supported audio file type.
 - **“This PDF appears to be scanned or image-only.”**
   - The uploaded PDF has no extractable text layer.
 - **“File is too large.”**

@@ -47,6 +47,21 @@ const EMPTY_RESULT = {
   preview: '',
 }
 
+const DEFAULT_CONFIG = {
+  maxUploadMb: 25,
+  sharedApiKeyConfigured: false,
+  translationConfigured: false,
+  transcriptionConfigured: false,
+}
+
+function buildDefaultSetupFormState(nextConfig = DEFAULT_CONFIG) {
+  return {
+    openAIApiKey: '',
+    enableTranslation: nextConfig.translationConfigured || !nextConfig.transcriptionConfigured,
+    enableTranscription: nextConfig.transcriptionConfigured || !nextConfig.translationConfigured,
+  }
+}
+
 function downloadText(content, filename, mimeType) {
   const blob = new Blob([content], { type: mimeType })
   const url = URL.createObjectURL(blob)
@@ -83,7 +98,11 @@ function App() {
   const [statusMessage, setStatusMessage] = useState('')
   const [errorMessage, setErrorMessage] = useState('')
   const [busyLabel, setBusyLabel] = useState('')
-  const [config, setConfig] = useState({ maxUploadMb: 25, translationConfigured: false, transcriptionConfigured: false })
+  const [config, setConfig] = useState(DEFAULT_CONFIG)
+  const [setupModalOpen, setSetupModalOpen] = useState(false)
+  const [setupBusy, setSetupBusy] = useState(false)
+  const [setupErrorMessage, setSetupErrorMessage] = useState('')
+  const [setupForm, setSetupForm] = useState(() => buildDefaultSetupFormState(DEFAULT_CONFIG))
   const [lastDetectedLanguage, setLastDetectedLanguage] = useState('English')
 
   const paragraphPairs = useMemo(() => {
@@ -96,18 +115,43 @@ function App() {
     }))
   }, [currentResult])
 
-  useEffect(() => {
-    fetch('/api/health')
-      .then(parseResponse)
-      .then((payload) => setConfig(payload))
-      .catch(() => setConfig({ maxUploadMb: 25, translationConfigured: false, transcriptionConfigured: false }))
+  const missingSetupItems = useMemo(() => ([
+    !config.translationConfigured ? 'translation' : null,
+    !config.transcriptionConfigured ? 'transcription' : null,
+  ].filter(Boolean)), [config])
+
+  const loadHealthConfig = useCallback(async () => {
+    const payload = await parseResponse(await fetch('/api/health'))
+    const nextConfig = { ...DEFAULT_CONFIG, ...payload }
+    setConfig(nextConfig)
+    setSetupForm((current) => ({
+      ...buildDefaultSetupFormState(nextConfig),
+      openAIApiKey: current.openAIApiKey,
+    }))
+    setSetupModalOpen(!nextConfig.translationConfigured || !nextConfig.transcriptionConfigured)
+    return nextConfig
   }, [])
+
+  useEffect(() => {
+    loadHealthConfig().catch(() => {
+      setConfig(DEFAULT_CONFIG)
+      setSetupForm(buildDefaultSetupFormState(DEFAULT_CONFIG))
+      setSetupModalOpen(true)
+    })
+  }, [loadHealthConfig])
 
   useEffect(() => {
     saveHistory(typeof window !== 'undefined' ? window.localStorage : null, history)
   }, [history])
 
   const requestTranslation = useCallback(async ({ text, mode, sourceLanguage = 'Auto-detect', fileName = '', transcript = '', preview = '' }) => {
+    if (!config.translationConfigured) {
+      setErrorMessage('Finish setup to start translating.')
+      setSetupErrorMessage('')
+      setSetupModalOpen(true)
+      return null
+    }
+
     const cleaned = cleanExtractedText(text)
     if (!cleaned.trim()) {
       setErrorMessage('No text found to translate.')
@@ -206,7 +250,7 @@ function App() {
     } finally {
       setBusyLabel('')
     }
-  }, [lastDetectedLanguage, targetLanguage])
+  }, [config.translationConfigured, lastDetectedLanguage, targetLanguage])
 
   const handleClipboardCapture = useCallback(async (clipboardText) => {
     const combined = incrementalCopy && copySource
@@ -290,6 +334,13 @@ function App() {
   }
 
   async function handleAudioUpload(event) {
+    if (!config.transcriptionConfigured) {
+      setErrorMessage('Finish setup to start transcribing audio.')
+      setSetupErrorMessage('')
+      setSetupModalOpen(true)
+      return
+    }
+
     const file = event.target.files?.[0]
     if (!file) {
       return
@@ -330,6 +381,13 @@ function App() {
   }
 
   async function handleDocumentUpload(event) {
+    if (!config.translationConfigured) {
+      setErrorMessage('Finish setup to start translating documents.')
+      setSetupErrorMessage('')
+      setSetupModalOpen(true)
+      return
+    }
+
     const file = event.target.files?.[0]
     if (!file) {
       return
@@ -372,6 +430,32 @@ function App() {
   async function copyValue(value, successMessage) {
     await navigator.clipboard.writeText(value)
     setStatusMessage(successMessage)
+  }
+
+  async function handleSetupSubmit(event) {
+    event.preventDefault()
+    setSetupBusy(true)
+    setSetupErrorMessage('')
+
+    try {
+      const payload = await parseResponse(await fetch('/api/setup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(setupForm),
+      }))
+
+      const nextConfig = { ...DEFAULT_CONFIG, ...payload }
+      setConfig(nextConfig)
+      setSetupForm(buildDefaultSetupFormState(nextConfig))
+      setSetupErrorMessage('')
+      setSetupModalOpen(false)
+      setErrorMessage('')
+      setStatusMessage('Setup saved. TranslatorBot is ready.')
+    } catch (error) {
+      setSetupErrorMessage(error.message)
+    } finally {
+      setSetupBusy(false)
+    }
   }
 
   function reopenHistoryEntry(entry) {
@@ -422,9 +506,75 @@ function App() {
 
   return (
     <div className="app-shell">
+      <div className="bg-portrait"></div>
+      <div className="bg-vignette"></div>
       <div className="bg-orb orb-a"></div>
       <div className="bg-orb orb-b"></div>
       <div className="bg-grid"></div>
+      {setupModalOpen ? (
+        <div className="modal-backdrop">
+          <section className="setup-modal glass-panel" role="dialog" aria-modal="true" aria-labelledby="setup-title">
+            <div className="section-heading compact-stack">
+              <div>
+                <p className="eyebrow">Quick setup</p>
+                <h2 id="setup-title">Finish configuring {missingSetupItems.join(' and ') || 'TranslatorBot'}</h2>
+              </div>
+              <button type="button" className="ghost-button" onClick={() => setSetupModalOpen(false)}>Maybe later</button>
+            </div>
+            <p className="setup-copy">
+              Paste one OpenAI API key and choose which features should be enabled. TranslatorBot saves the settings for you automatically.
+            </p>
+            <form className="setup-form" onSubmit={handleSetupSubmit}>
+              <label className="field-label">
+                OpenAI API key
+                <input
+                  type="password"
+                  value={setupForm.openAIApiKey}
+                  onChange={(event) => setSetupForm((current) => ({ ...current, openAIApiKey: event.target.value }))}
+                  placeholder={config.sharedApiKeyConfigured ? 'Leave blank to keep the saved key' : 'Paste the key that starts with sk-'}
+                />
+                <small className="field-hint">
+                  {config.sharedApiKeyConfigured ? 'A saved key already exists, so you only need to paste a new one if you want to replace it.' : 'The same key can power both translation and transcription.'}
+                </small>
+              </label>
+              <label className="toggle-row setup-toggle">
+                <input
+                  type="checkbox"
+                  checked={setupForm.enableTranslation}
+                  onChange={(event) => setSetupForm((current) => ({ ...current, enableTranslation: event.target.checked }))}
+                />
+                Turn on translation
+              </label>
+              <label className="toggle-row setup-toggle">
+                <input
+                  type="checkbox"
+                  checked={setupForm.enableTranscription}
+                  onChange={(event) => setSetupForm((current) => ({ ...current, enableTranscription: event.target.checked }))}
+                />
+                Turn on transcription
+              </label>
+              {setupErrorMessage ? <div className="message error">{setupErrorMessage}</div> : null}
+              <div className="button-row wrap">
+                <button type="submit" className="primary-button" disabled={setupBusy}>
+                  {setupBusy ? 'Saving setup...' : 'Save setup'}
+                </button>
+              <button
+                type="button"
+                className="secondary-button"
+                disabled={setupBusy}
+                onClick={() => {
+                  loadHealthConfig().catch(() => {
+                    setSetupErrorMessage('Could not refresh configuration status.')
+                  })
+                }}
+              >
+                Refresh status
+              </button>
+              </div>
+            </form>
+          </section>
+        </div>
+      ) : null}
       <header className="hero-card glass-panel">
         <div>
           <p className="eyebrow">Ocean intelligence console</p>
@@ -443,6 +593,14 @@ function App() {
             <span className={config.transcriptionConfigured ? 'status-dot good' : 'status-dot warn'}></span>
             Transcription {config.transcriptionConfigured ? 'ready' : 'not configured'}
           </div>
+          {!config.translationConfigured || !config.transcriptionConfigured ? (
+            <button type="button" className="primary-button" onClick={() => {
+              setSetupErrorMessage('')
+              setSetupModalOpen(true)
+            }}>
+              Finish setup
+            </button>
+          ) : null}
           <label className="field-label compact">
             Target language
             <select value={targetLanguage} onChange={(event) => setTargetLanguage(event.target.value)}>

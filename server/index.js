@@ -7,6 +7,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { cleanExtractedText } from '../shared/textTools.js'
+import { saveSetupConfiguration, sharedApiKeyConfigured } from './configStore.js'
 import {
   translateText,
   transcribeAudio,
@@ -43,9 +44,36 @@ app.get('/api/health', (_req, res) => {
   res.json({
     ok: true,
     maxUploadMb,
+    sharedApiKeyConfigured: sharedApiKeyConfigured(),
     translationConfigured: translationConfigured(),
     transcriptionConfigured: transcriptionConfigured(),
   })
+})
+
+app.post('/api/setup', (req, res, next) => {
+  try {
+    const {
+      openAIApiKey = '',
+      enableTranslation = true,
+      enableTranscription = true,
+    } = req.body || {}
+
+    saveSetupConfiguration({
+      openAIApiKey,
+      enableTranslation: Boolean(enableTranslation),
+      enableTranscription: Boolean(enableTranscription),
+    })
+
+    res.json({
+      ok: true,
+      maxUploadMb,
+      sharedApiKeyConfigured: sharedApiKeyConfigured(),
+      translationConfigured: translationConfigured(),
+      transcriptionConfigured: transcriptionConfigured(),
+    })
+  } catch (error) {
+    next(error)
+  }
 })
 
 app.post('/api/translate', async (req, res, next) => {

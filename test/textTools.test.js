@@ -1,7 +1,7 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { addHistoryEntry, buildHistoryEntry } from '../src/lib/history.js'
-import { cleanExtractedText, defaultFallbackTargetLanguage, isShortPhrase } from '../shared/textTools.js'
+import { cleanExtractedText, defaultFallbackTargetLanguage, isShortPhrase, LANGUAGE_OPTIONS } from '../shared/textTools.js'
 
 test('cleanExtractedText merges PDF line breaks and hyphenation', () => {
   const raw = 'This para-\ngraph has bro-\nken lines.\nIt should flow.\n\nSecond  paragraph.'
@@ -38,4 +38,9 @@ test('history entries are capped at twenty items', () => {
 
   assert.equal(nextHistory.length, 20)
   assert.equal(nextHistory[0].mode, 'copy')
+})
+
+test('language options include Albanian and Russian', () => {
+  assert.equal(LANGUAGE_OPTIONS.includes('Albanian'), true)
+  assert.equal(LANGUAGE_OPTIONS.includes('Russian'), true)
 })
