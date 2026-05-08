@@ -109,13 +109,13 @@ function App() {
   const [lastDetectedLanguage, setLastDetectedLanguage] = useState('English')
   const isUsingLocalLmStudio = config.llmStudioDetected && !config.sharedApiKeyConfigured
 
-  const getDetectedLanguageLabel = useCallback((mode) => {
+  function getDetectedLanguageLabel(mode) {
     if (currentResult.mode !== mode) {
       return 'Auto-detecting...'
     }
 
     return currentResult.detectedLanguage || 'Auto-detecting...'
-  }, [currentResult.detectedLanguage, currentResult.mode])
+  }
 
   const buildTranslationStatusMessage = useCallback((payload) => {
     if (payload.switchedTargetLanguage) {

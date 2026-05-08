@@ -441,9 +441,7 @@ h3 {
 }
 
 .tab-button::before,
-.primary-button::before,
-.secondary-button::before,
-.ghost-button::before {
+.primary-button::before {
   content: '';
   display: inline-block;
   width: 0.5rem;
