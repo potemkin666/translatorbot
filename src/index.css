@@ -43,6 +43,19 @@ button {
   overflow: hidden;
 }
 
+.app-shell::after {
+  content: '';
+  position: fixed;
+  inset: -8%;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 22% 20%, rgba(94, 231, 255, 0.08), transparent 22%),
+    radial-gradient(circle at 78% 28%, rgba(96, 165, 250, 0.08), transparent 24%),
+    radial-gradient(circle at 50% 78%, rgba(45, 212, 191, 0.06), transparent 26%);
+  mix-blend-mode: screen;
+  animation: oceanGlow 18s ease-in-out infinite alternate;
+}
+
 .bg-portrait,
 .bg-vignette,
 .bg-orb,
@@ -63,6 +76,7 @@ button {
   transform: scale(1.04);
   transform-origin: center;
   filter: saturate(1.08) contrast(1.02);
+  animation: portraitDrift 24s ease-in-out infinite alternate;
 }
 
 .bg-vignette {
@@ -123,12 +137,14 @@ button {
   top: -8rem;
   right: -6rem;
   background: #2dd4bf;
+  animation: orbPulse 10s ease-in-out infinite;
 }
 
 .orb-b {
   bottom: -10rem;
   left: -4rem;
   background: #2563eb;
+  animation: orbPulse 12s ease-in-out infinite reverse;
 }
 
 .bg-grid {
@@ -146,6 +162,84 @@ button {
 @keyframes drift {
   from { transform: translateY(0); }
   to { transform: translateY(1rem); }
+}
+
+@keyframes portraitDrift {
+  0% {
+    transform: scale(1.04) translate3d(0, 0, 0);
+  }
+  50% {
+    transform: scale(1.08) translate3d(0.8rem, -0.7rem, 0);
+  }
+  100% {
+    transform: scale(1.06) translate3d(-0.7rem, 0.6rem, 0);
+  }
+}
+
+@keyframes orbPulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.22;
+  }
+  50% {
+    transform: scale(1.12);
+    opacity: 0.36;
+  }
+}
+
+@keyframes bluePulse {
+  0%, 100% {
+    box-shadow:
+      0 0 0 0 rgba(94, 231, 255, 0.14),
+      0 10px 26px rgba(37, 99, 235, 0.12);
+  }
+  50% {
+    box-shadow:
+      0 0 0 0.45rem rgba(94, 231, 255, 0.06),
+      0 16px 38px rgba(56, 189, 248, 0.2);
+  }
+}
+
+@keyframes cardFloat {
+  0%, 100% {
+    transform: translateY(0);
+    box-shadow:
+      0 30px 80px rgba(0, 0, 0, 0.34),
+      inset 0 1px 0 rgba(255, 255, 255, 0.08),
+      inset 0 -1px 0 rgba(84, 228, 255, 0.05);
+  }
+  50% {
+    transform: translateY(-4px);
+    box-shadow:
+      0 38px 92px rgba(0, 0, 0, 0.38),
+      0 0 32px rgba(56, 189, 248, 0.12),
+      inset 0 1px 0 rgba(255, 255, 255, 0.08),
+      inset 0 -1px 0 rgba(84, 228, 255, 0.07);
+  }
+}
+
+@keyframes statusGlow {
+  0%, 100% {
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.06),
+      0 0 0 rgba(94, 231, 255, 0);
+  }
+  50% {
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.06),
+      0 0 18px rgba(94, 231, 255, 0.14);
+  }
+}
+
+@keyframes oceanGlow {
+  0% {
+    transform: translate3d(-1%, -1%, 0) scale(1);
+    opacity: 0.8;
+  }
+  100% {
+    transform: translate3d(1%, 1%, 0) scale(1.04);
+    opacity: 1;
+  }
 }
 
 .layout-grid {
@@ -175,6 +269,16 @@ button {
     inset 0 1px 0 rgba(255, 255, 255, 0.08),
     inset 0 -1px 0 rgba(84, 228, 255, 0.05);
   backdrop-filter: blur(26px) saturate(140%);
+}
+
+.hero-card,
+.section-panel,
+.history-panel,
+.panel-card,
+.result-card,
+.upload-zone,
+.history-item {
+  animation: cardFloat 11s ease-in-out infinite;
 }
 
 .hero-card,
@@ -261,6 +365,7 @@ h2 {
   background: linear-gradient(180deg, rgba(8, 28, 54, 0.84) 0%, rgba(6, 20, 38, 0.86) 100%);
   border: 1px solid rgba(131, 227, 255, 0.12);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  animation: statusGlow 4.6s ease-in-out infinite;
 }
 
 .busy-pill {
@@ -273,6 +378,7 @@ h2 {
   border-radius: 999px;
   display: inline-block;
   box-shadow: 0 0 16px currentColor;
+  animation: bluePulse 3.2s ease-in-out infinite;
 }
 
 .status-dot.good { color: #2dd4bf; background: #2dd4bf; }
@@ -295,6 +401,7 @@ h2 {
   border-radius: 999px;
   border: 1px solid transparent;
   transition: transform 160ms ease, border-color 160ms ease, background 160ms ease, box-shadow 160ms ease;
+  animation: bluePulse 3.8s ease-in-out infinite;
 }
 
 .tab-button {
@@ -406,6 +513,7 @@ input {
   color: #effeff;
   resize: vertical;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  animation: statusGlow 5.2s ease-in-out infinite;
 }
 
 textarea:focus,
@@ -590,5 +698,32 @@ input[disabled] {
 
   .tab-strip {
     top: 0.5rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-shell::after,
+  .bg-portrait,
+  .orb-a,
+  .orb-b,
+  .hero-card,
+  .section-panel,
+  .history-panel,
+  .panel-card,
+  .result-card,
+  .upload-zone,
+  .history-item,
+  .status-pill,
+  .busy-pill,
+  .status-dot,
+  .tab-button,
+  .primary-button,
+  .secondary-button,
+  .ghost-button,
+  textarea,
+  select,
+  input,
+  .bg-grid {
+    animation: none;
   }
 }
