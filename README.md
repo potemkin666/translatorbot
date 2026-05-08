@@ -8,7 +8,7 @@ TranslatorBot is an ocean-themed translation workspace inspired by CopyTranslato
 - **Text Mode** with auto-detect source language, translate/copy/export actions, and markdown downloads
 - **Audio Mode** for mp3, wav, m4a, and webm uploads with transcript + translation output
 - **Document Mode** for PDF, TXT, and DOCX extraction with scanned PDF detection
-- **Guided setup popup** that helps non-technical users save the OpenAI key and enable translation/transcription from the UI
+- **Guided setup popup** that helps non-technical users save the OpenAI key or use a detected LM Studio server, then enable translation/transcription from the UI
 - **Reading Mode** for large, focused translation-only viewing
 - **Contrast Mode** for side-by-side paragraph alignment
 - **Dictionary Mode** for single-word and short-phrase definitions, examples, and alternatives
@@ -19,7 +19,7 @@ TranslatorBot is an ocean-themed translation workspace inspired by CopyTranslato
 
 - React + Vite frontend
 - Express backend
-- OpenAI provider abstraction for translation and transcription
+- OpenAI-compatible provider abstraction for translation and transcription
 - `pdf-parse` for PDFs
 - `mammoth` for DOCX
 
@@ -64,6 +64,7 @@ npm run lint
 
 ```env
 OPENAI_API_KEY=
+OPENAI_BASE_URL=
 TRANSLATION_PROVIDER=openai
 TRANSLATION_API_KEY=
 TRANSCRIPTION_PROVIDER=openai
@@ -75,8 +76,10 @@ Notes:
 
 - `TRANSLATION_PROVIDER` currently supports `openai`.
 - `TRANSCRIPTION_PROVIDER` currently supports `openai`.
+- `OPENAI_BASE_URL` is optional and lets you point the app at LM Studio or another OpenAI-compatible endpoint.
 - `TRANSLATION_API_KEY` is optional when `OPENAI_API_KEY` is already set.
 - The setup popup keeps working if an older `.env` already has `TRANSLATION_API_KEY`; it will reuse that saved key unless you paste a new shared `OPENAI_API_KEY`.
+- If LM Studio is running on its default local port, the setup popup can finish without a pasted API key and will save the local base URL for you.
 
 ## How it works
 
@@ -85,16 +88,16 @@ Notes:
 3. **Audio Mode** uploads supported audio files, requests a transcript, then translates that transcript.
 4. **Document Mode** extracts clean text from PDF/TXT/DOCX, rejects image-only PDFs, and translates the cleaned content.
 5. **Reading / Contrast / Dictionary** tabs reuse the latest successful translation in specialized views.
-6. **Guided setup popup** opens automatically whenever translation or transcription is missing and writes the chosen settings into `.env`.
+6. **Guided setup popup** opens automatically whenever translation or transcription is missing and writes the chosen settings into `.env`, using either a pasted OpenAI key or a detected LM Studio server.
 
 ## Troubleshooting
 
 - **“Clipboard listening must be enabled first.”**
   - Browser clipboard access must be triggered by the Start listening button.
 - **“Translation provider is not configured.”**
-  - Use the setup popup or set `OPENAI_API_KEY` and `TRANSLATION_PROVIDER=openai` in `.env`.
+  - Use the setup popup or set `OPENAI_API_KEY` and `TRANSLATION_PROVIDER=openai` in `.env`. If you use LM Studio instead, also set `OPENAI_BASE_URL`.
 - **“Audio transcription failed.”**
-  - Use the setup popup or confirm `TRANSCRIPTION_PROVIDER=openai`, the API key, and a supported audio file type.
+  - Use the setup popup or confirm `TRANSCRIPTION_PROVIDER=openai`, the API key or LM Studio connection, and a supported audio file type.
 - **“This PDF appears to be scanned or image-only.”**
   - The uploaded PDF has no extractable text layer.
 - **“File is too large.”**
@@ -106,7 +109,7 @@ _Add screenshots here after configuring your provider and capturing the UI._
 
 ## Limitations
 
-- Translation and transcription currently support the OpenAI provider only.
+- Translation and transcription currently support OpenAI-compatible providers only (for example OpenAI and LM Studio).
 - Browser clipboard monitoring depends on user-granted clipboard permissions.
 - Sentence/paragraph alignment in Contrast Mode is paragraph-based rather than semantic sentence matching.
 - Scanned PDFs are detected, but OCR is intentionally not faked or simulated.
