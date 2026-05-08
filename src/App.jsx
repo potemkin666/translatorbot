@@ -50,6 +50,7 @@ const EMPTY_RESULT = {
 const DEFAULT_CONFIG = {
   maxUploadMb: 25,
   sharedApiKeyConfigured: false,
+  llmStudioDetected: false,
   translationConfigured: false,
   transcriptionConfigured: false,
 }
@@ -522,7 +523,9 @@ function App() {
               <button type="button" className="ghost-button" onClick={() => setSetupModalOpen(false)}>Maybe later</button>
             </div>
             <p className="setup-copy">
-              Paste one OpenAI API key and choose which features should be enabled. TranslatorBot saves the settings for you automatically.
+              {config.llmStudioDetected
+                ? 'LM Studio was detected locally, so you can save setup without pasting an OpenAI key. You can still paste a key if you want to use OpenAI or another compatible endpoint instead.'
+                : 'Paste one OpenAI API key or start LM Studio, then choose which features should be enabled. TranslatorBot saves the settings for you automatically.'}
             </p>
             <form className="setup-form" onSubmit={handleSetupSubmit}>
               <label className="field-label">
@@ -534,7 +537,11 @@ function App() {
                   placeholder={config.sharedApiKeyConfigured ? 'Leave blank to keep the saved key' : 'Paste the key that starts with sk-'}
                 />
                 <small className="field-hint">
-                  {config.sharedApiKeyConfigured ? 'A saved key already exists, so you only need to paste a new one if you want to replace it.' : 'The same key can power both translation and transcription.'}
+                  {config.sharedApiKeyConfigured
+                    ? 'A saved key already exists, so you only need to paste a new one if you want to replace it.'
+                    : config.llmStudioDetected
+                      ? 'LM Studio is available, so this key is optional unless you want to use OpenAI instead.'
+                      : 'The same key can power both translation and transcription.'}
                 </small>
               </label>
               <label className="toggle-row setup-toggle">

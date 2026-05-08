@@ -9,6 +9,7 @@ import { fileURLToPath } from 'node:url'
 import { cleanExtractedText } from '../shared/textTools.js'
 import { saveSetupConfiguration, sharedApiKeyConfigured } from './configStore.js'
 import {
+  detectLmStudio,
   translateText,
   transcribeAudio,
   translationConfigured,
@@ -40,18 +41,28 @@ const supportedDocumentExtensions = new Set(['.pdf', '.txt', '.docx'])
 
 app.use(express.json({ limit: '2mb' }))
 
-app.get('/api/health', (_req, res) => {
-  res.json({
-    ok: true,
-    maxUploadMb,
-    sharedApiKeyConfigured: sharedApiKeyConfigured(),
-    translationConfigured: translationConfigured(),
-    transcriptionConfigured: transcriptionConfigured(),
-  })
+app.get('/api/health', async (_req, res, next) => {
+  try {
+    const llmStudioDetected = await detectLmStudio()
+    const translationReady = await translationConfigured()
+    const transcriptionReady = await transcriptionConfigured()
+
+    res.json({
+      ok: true,
+      maxUploadMb,
+      sharedApiKeyConfigured: sharedApiKeyConfigured(),
+      llmStudioDetected,
+      translationConfigured: translationReady,
+      transcriptionConfigured: transcriptionReady,
+    })
+  } catch (error) {
+    next(error)
+  }
 })
 
-app.post('/api/setup', (req, res, next) => {
+app.post('/api/setup', async (req, res, next) => {
   try {
+    const llmStudioDetected = await detectLmStudio()
     const {
       openAIApiKey = '',
       enableTranslation = true,
@@ -62,14 +73,16 @@ app.post('/api/setup', (req, res, next) => {
       openAIApiKey,
       enableTranslation: Boolean(enableTranslation),
       enableTranscription: Boolean(enableTranscription),
+      lmStudioDetected,
     })
 
     res.json({
       ok: true,
       maxUploadMb,
       sharedApiKeyConfigured: sharedApiKeyConfigured(),
-      translationConfigured: translationConfigured(),
-      transcriptionConfigured: transcriptionConfigured(),
+      llmStudioDetected,
+      translationConfigured: await translationConfigured(),
+      transcriptionConfigured: await transcriptionConfigured(),
     })
   } catch (error) {
     next(error)

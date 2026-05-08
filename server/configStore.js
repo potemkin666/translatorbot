@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url'
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 const DEFAULT_ENV_PATH = path.resolve(__dirname, '../.env')
+export const DEFAULT_LM_STUDIO_BASE_URL = 'http://127.0.0.1:1234/v1'
 const ENV_KEY_PATTERN = /^([A-Z0-9_]+)=.*$/
 
 function normalizeEnvValue(value = '') {
@@ -58,6 +59,7 @@ export function saveSetupConfiguration({
   enableTranslation = true,
   enableTranscription = true,
   envPath = DEFAULT_ENV_PATH,
+  lmStudioDetected = false,
 }) {
   if (!enableTranslation && !enableTranscription) {
     const error = new Error('Choose at least one feature to configure.')
@@ -67,8 +69,10 @@ export function saveSetupConfiguration({
 
   const existingKey = getStoredApiKey()
   const nextKey = normalizeEnvValue(openAIApiKey) || existingKey
-  if (!nextKey) {
-    const error = new Error('Enter your OpenAI API key to finish setup.')
+  const existingBaseUrl = normalizeEnvValue(process.env.OPENAI_BASE_URL || process.env.LM_STUDIO_BASE_URL || '')
+  const nextBaseUrl = existingBaseUrl || (lmStudioDetected ? DEFAULT_LM_STUDIO_BASE_URL : '')
+  if (!nextKey && !nextBaseUrl) {
+    const error = new Error('Enter your OpenAI API key or start LM Studio to finish setup.')
     error.statusCode = 400
     throw error
   }
@@ -83,6 +87,7 @@ export function saveSetupConfiguration({
   }
   const nextContent = updateEnvFileContent(existingContent, {
     OPENAI_API_KEY: nextKey,
+    OPENAI_BASE_URL: nextBaseUrl,
     TRANSLATION_PROVIDER: enableTranslation ? 'openai' : '',
     TRANSCRIPTION_PROVIDER: enableTranscription ? 'openai' : '',
   })
@@ -90,11 +95,13 @@ export function saveSetupConfiguration({
   fs.writeFileSync(envPath, nextContent, 'utf8')
 
   process.env.OPENAI_API_KEY = nextKey
+  process.env.OPENAI_BASE_URL = nextBaseUrl
   process.env.TRANSLATION_PROVIDER = enableTranslation ? 'openai' : ''
   process.env.TRANSCRIPTION_PROVIDER = enableTranscription ? 'openai' : ''
 
   return {
-    sharedApiKeyConfigured: true,
+    sharedApiKeyConfigured: Boolean(nextKey),
+    llmStudioDetected: Boolean(nextBaseUrl),
   }
 }
 
