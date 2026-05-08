@@ -54,7 +54,7 @@ const DEFAULT_CONFIG = {
   transcriptionConfigured: false,
 }
 
-function buildSetupFormState(nextConfig = DEFAULT_CONFIG) {
+function buildDefaultSetupFormState(nextConfig = DEFAULT_CONFIG) {
   return {
     openAIApiKey: '',
     enableTranslation: nextConfig.translationConfigured || !nextConfig.transcriptionConfigured,
@@ -102,7 +102,7 @@ function App() {
   const [setupModalOpen, setSetupModalOpen] = useState(false)
   const [setupBusy, setSetupBusy] = useState(false)
   const [setupErrorMessage, setSetupErrorMessage] = useState('')
-  const [setupForm, setSetupForm] = useState(() => buildSetupFormState(DEFAULT_CONFIG))
+  const [setupForm, setSetupForm] = useState(() => buildDefaultSetupFormState(DEFAULT_CONFIG))
   const [lastDetectedLanguage, setLastDetectedLanguage] = useState('English')
 
   const paragraphPairs = useMemo(() => {
@@ -125,7 +125,7 @@ function App() {
     const nextConfig = { ...DEFAULT_CONFIG, ...payload }
     setConfig(nextConfig)
     setSetupForm((current) => ({
-      ...buildSetupFormState(nextConfig),
+      ...buildDefaultSetupFormState(nextConfig),
       openAIApiKey: current.openAIApiKey,
     }))
     setSetupModalOpen(!nextConfig.translationConfigured || !nextConfig.transcriptionConfigured)
@@ -135,7 +135,7 @@ function App() {
   useEffect(() => {
     loadHealthConfig().catch(() => {
       setConfig(DEFAULT_CONFIG)
-      setSetupForm(buildSetupFormState(DEFAULT_CONFIG))
+      setSetupForm(buildDefaultSetupFormState(DEFAULT_CONFIG))
       setSetupModalOpen(true)
     })
   }, [loadHealthConfig])
@@ -446,7 +446,7 @@ function App() {
 
       const nextConfig = { ...DEFAULT_CONFIG, ...payload }
       setConfig(nextConfig)
-      setSetupForm(buildSetupFormState(nextConfig))
+      setSetupForm(buildDefaultSetupFormState(nextConfig))
       setSetupErrorMessage('')
       setSetupModalOpen(false)
       setErrorMessage('')
