@@ -107,14 +107,14 @@ function App() {
   const [setupErrorMessage, setSetupErrorMessage] = useState('')
   const [setupForm, setSetupForm] = useState(() => buildDefaultSetupFormState(DEFAULT_CONFIG))
   const [lastDetectedLanguage, setLastDetectedLanguage] = useState('English')
-  const autoConnectedToLmStudio = config.llmStudioDetected && !config.sharedApiKeyConfigured
+  const isUsingLocalLmStudio = config.llmStudioDetected && !config.sharedApiKeyConfigured
 
   const getDetectedLanguageLabel = useCallback((mode) => {
     if (currentResult.mode !== mode) {
-      return 'Auto-detecting'
+      return 'Auto-detecting...'
     }
 
-    return currentResult.detectedLanguage || 'Detecting automatically'
+    return currentResult.detectedLanguage || 'Auto-detecting...'
   }, [currentResult.detectedLanguage, currentResult.mode])
 
   const paragraphPairs = useMemo(() => {
@@ -619,9 +619,9 @@ function App() {
             Transcription {config.transcriptionConfigured ? 'ready' : 'not configured'}
           </div>
           {config.llmStudioDetected ? (
-            <div className={`status-pill ${autoConnectedToLmStudio ? 'live' : ''}`}>
-              <span className={autoConnectedToLmStudio ? 'status-dot live' : 'status-dot good'}></span>
-              {autoConnectedToLmStudio ? 'LM Studio auto-connected' : 'LM Studio detected locally'}
+            <div className={`status-pill ${isUsingLocalLmStudio ? 'live' : ''}`}>
+              <span className={isUsingLocalLmStudio ? 'status-dot live' : 'status-dot good'}></span>
+              {isUsingLocalLmStudio ? 'LM Studio auto-connected' : 'LM Studio detected locally'}
             </div>
           ) : null}
           {!config.translationConfigured || !config.transcriptionConfigured ? (

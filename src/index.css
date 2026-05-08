@@ -55,7 +55,7 @@ button {
   position: fixed;
   inset: 1rem;
   border-radius: 2rem;
-  border: 1px solid rgba(255, 183, 172, 0.12);
+  border: 1px solid rgba(255, 183, 172, 0.2);
   box-shadow:
     0 0 0 1px rgba(147, 240, 255, 0.05),
     inset 0 0 48px rgba(255, 164, 178, 0.08),
@@ -444,9 +444,15 @@ h3 {
 .primary-button::before,
 .secondary-button::before,
 .ghost-button::before {
-  content: '✦';
+  content: '';
+  display: inline-block;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 999px;
   margin-right: 0.45rem;
-  color: rgba(255, 247, 229, 0.9);
+  vertical-align: middle;
+  background: radial-gradient(circle, rgba(255, 247, 229, 0.95) 0%, rgba(118, 245, 255, 0.55) 52%, rgba(118, 245, 255, 0) 72%);
+  box-shadow: 0 0 12px rgba(118, 245, 255, 0.24);
 }
 
 .tab-button {
@@ -466,7 +472,8 @@ h3 {
 
 .primary-button::before,
 .tab-button.active::before {
-  color: rgba(8, 18, 28, 0.82);
+  background: radial-gradient(circle, rgba(7, 18, 28, 0.9) 0%, rgba(7, 18, 28, 0.28) 52%, rgba(7, 18, 28, 0) 72%);
+  box-shadow: 0 0 12px rgba(7, 18, 28, 0.18);
 }
 
 .primary-button,
